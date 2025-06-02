@@ -1,0 +1,46 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VTIMEZONE
+TZID:Africa/Nairobi
+X-LIC-LOCATION:Africa/Nairobi
+BEGIN:STANDARD
+TZOFFSETFROM:+0300
+TZOFFSETTO:+0300
+TZNAME:GMT+3
+DTSTART:19700101T000000
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=Africa/Nairobi:20250530T160000
+DTEND;TZID=Africa/Nairobi:20250530T170000
+DTSTAMP:20250530T111550Z
+ORGANIZER;CN=Martin Ngesa:mailto:ngma@odoo.com
+UID:0a296gro7j99mfi9u0cb287fcl@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Martin Ngesa;X-NUM-GUESTS=0:mailto:ngma@odoo.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=ranjaanto@gmail.com;X-NUM-GUESTS=0:mailto:ranjaanto@gmail.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/obj-ikvk-eaa
+X-MICROSOFT-CDO-OWNERAPPTID:956326367
+CREATED:20250530T111543Z
+DESCRIPTION:Hi Antony\,\n\nThank you for the chat over the phone.This is ou
+ r scheduled chat for you to fully explain to me how your business operates\
+ , so I can advise on whether Odoo can meet all your requirements.  \n\nSee 
+ you then!\n\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:
+ ~:~:~:~:~:~:~:~:~::~:~::-\nJoin with Google Meet: https://meet.google.com/o
+ bj-ikvk-eaa\nOr dial: (KE) +254 20 3893887 PIN: 7267151913133#\nMore phone 
+ numbers: https://tel.meet/obj-ikvk-eaa?pin=7267151913133&hs=7\n\nLearn more
+  about Meet at: https://support.google.com/a/users/answer/9282720\n\nPlease
+  do not edit this section.\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+LAST-MODIFIED:20250530T111549Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Mwembe Mzaramo Paints and Suppliers <> Odoo Intro Consultation
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

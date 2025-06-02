@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard - Debug Version</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #1a1f3a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            z-index: 10000;
+            font-size: 0.75rem;
+            min-width: 200px;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #0f1419;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            border-right: 1px solid #334155;
+        }
+
+        .logo {
+            padding: 0 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            color: #6366f1;
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .nav-link i {
+            margin-right: 1rem;
+            font-size: 1.25rem;
+            width: 24px;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-section p {
+            color: #94a3b8;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5048e5;
+            transform: translateY(-2px);
+        }
+
+        .btn-test {
+            background: #10b981;
+            color: white;
+            margin-left: 1rem;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #1a1f3a;
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .stat-card.income::before {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card.expense::before {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.balance::before {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: #1a1f3a;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #334155;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            background: #151932;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #334155;
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: #1a1f3a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: #ffffff;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        .transaction-list {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid #334155;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid #334155;
+            margin-bottom: 1rem;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+        }
+
+        .transaction-icon.income {
+            background: rgba(6, 182, 212, 0.1);
+            color: #06b6d4;
+        }
+
+        .transaction-icon.expense {
+            background: rgba(236, 72, 153, 0.1);
+            color: #ec4899;
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .transaction-category {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .transaction-amount.income {
+            color: #06b6d4;
+        }
+
+        .transaction-amount.expense {
+            color: #ec4899;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Panel -->
+    <div class="debug-panel">
+        <h4>🔍 Debug Info</h4>
+        <div id="debugInfo">
+            <p>Status: <span id="debugStatus">Loading...</span></p>
+            <p>API: <span id="debugAPI">Checking...</span></p>
+            <p>JS: <span id="debugJS">Loading...</span></p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h1>Analytics</h1>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item">
+                    <div class="nav-link active" onclick="debugLog('Dashboard clicked'); showPage('dashboard')">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-link" onclick="debugLog('Wallets clicked'); showPage('wallets')">
+                        <i class="fas fa-wallet"></i>
+                        Wallets
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-link" onclick="debugLog('Transactions clicked'); showPage('transactions')">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transactions
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page-content active">
+                <div class="header">
+                    <div class="welcome-section">
+                        <h1>Hello Richard !!</h1>
+                        <p>Welcome back to your financial dashboard</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="debugLog('Add Transaction clicked'); testTransactionModal()">
+                            <i class="fas fa-plus"></i>
+                            Add Transaction
+                        </button>
+                        <button class="btn btn-test" onclick="testAllFunctions()">
+                            🧪 Test All
+                        </button>
+                        <div class="user-avatar">R</div>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card income">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Total Income</div>
+                                <div class="stat-value" id="totalIncome">$3,500</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+12.5% from last month</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card expense">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Total Expenses</div>
+                                <div class="stat-value" id="totalExpenses">$135</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>+8.2% from last month</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card balance">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">Net Balance</div>
+                                <div class="stat-value" id="netBalance">$3,365</div>
+                                <div class="stat-change">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+4.3% from last month</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="transaction-list">
+                    <h3 style="margin-bottom: 1rem;">Recent Transactions</h3>
+                    <div id="transactionList">
+                        <!-- Transactions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wallets Page -->
+            <div id="wallets-page" class="page-content">
+                <h1>Wallets Page</h1>
+                <p>Wallets content will go here...</p>
+            </div>
+
+            <!-- Transactions Page -->
+            <div id="transactions-page" class="page-content">
+                <h1>All Transactions Page</h1>
+                <p>All transactions content will go here...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Simple Transaction Modal -->
+    <div id="transactionModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Transaction</h3>
+                <button class="modal-close" onclick="debugLog('Close modal clicked'); closeModal('transactionModal')">&times;</button>
+            </div>
+            <form id="transactionForm" onsubmit="debugLog('Form submitted'); handleTransactionSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" id="transactionDescription" placeholder="Enter description" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount ($)</label>
+                    <input type="number" class="form-control" id="transactionAmount" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select class="form-control" id="transactionType" required>
+                        <option value="">Select type</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="debugLog('Cancel clicked'); closeModal('transactionModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Add Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Debug logging function
+        function debugLog(message) {
+            console.log('🔍 DEBUG:', message);
+            document.getElementById('debugStatus').textContent = message;
+        }
+
+        // Initialize debug
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('Page loaded');
+            document.getElementById('debugJS').textContent = 'Working ✅';
+            
+            // Test API connection
+            fetch('http://127.0.0.1:8000/health')
+                .then(response => response.json())
+                .then(data => {
+                    debugLog('API connected');
+                    document.getElementById('debugAPI').textContent = 'Connected ✅';
+                    loadDemoTransactions();
+                })
+                .catch(error => {
+                    debugLog('API failed: ' + error.message);
+                    document.getElementById('debugAPI').textContent = 'Failed ❌';
+                    loadDemoTransactions();
+                });
+        });
+
+        // Page navigation
+        function showPage(pageName) {
+            debugLog('Showing page: ' + pageName);
+            
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageName + '-page').classList.add('active');
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav link
+            event.target.closest('.nav-link').classList.add('active');
+        }
+
+        // Modal functions
+        function testTransactionModal() {
+            debugLog('Opening transaction modal');
+            document.getElementById('transactionModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            debugLog('Closing modal: ' + modalId);
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Handle form submission
+        function handleTransactionSubmit(event) {
+            event.preventDefault();
+            debugLog('Form submitted');
+            
+            const description = document.getElementById('transactionDescription').value;
+            const amount = document.getElementById('transactionAmount').value;
+            const type = document.getElementById('transactionType').value;
+            
+            debugLog(`Transaction: ${description}, $${amount}, ${type}`);
+            
+            // Add to display
+            addTransactionToList(description, amount, type);
+            
+            // Show notification
+            showNotification('Transaction added successfully!', 'success');
+            
+            // Close modal
+            closeModal('transactionModal');
+            
+            // Reset form
+            document.getElementById('transactionForm').reset();
+        }
+
+        // Add transaction to list
+        function addTransactionToList(description, amount, type) {
+            const container = document.getElementById('transactionList');
+            const item = document.createElement('div');
+            item.className = 'transaction-item';
+            
+            const isExpense = type === 'expense';
+            
+            item.innerHTML = `
+                <div class="transaction-icon ${type}">
+                    <i class="fas fa-arrow-${isExpense ? 'down' : 'up'}"></i>
+                </div>
+                <div class="transaction-details">
+                    <div class="transaction-title">${description}</div>
+                    <div class="transaction-category">${type}</div>
+                </div>
+                <div class="transaction-amount ${type}">
+                    ${isExpense ? '-' : '+'}$${amount}
+                </div>
+            `;
+            
+            container.insertBefore(item, container.firstChild);
+            debugLog('Transaction added to list');
+        }
+
+        // Load demo transactions
+        function loadDemoTransactions() {
+            debugLog('Loading demo transactions');
+            const demoTransactions = [
+                { description: 'Salary', amount: '3000', type: 'income' },
+                { description: 'Groceries', amount: '85.50', type: 'expense' },
+                { description: 'Coffee', amount: '4.50', type: 'expense' }
+            ];
+            
+            demoTransactions.forEach(t => {
+                addTransactionToList(t.description, t.amount, t.type);
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            debugLog('Showing notification: ' + message);
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Test all functions
+        function testAllFunctions() {
+            debugLog('Testing all functions...');
+            
+            // Test 1: Modal
+            setTimeout(() => {
+                testTransactionModal();
+                debugLog('✅ Modal test passed');
+            }, 1000);
+            
+            // Test 2: Close modal
+            setTimeout(() => {
+                closeModal('transactionModal');
+                debugLog('✅ Close modal test passed');
+            }, 2000);
+            
+            // Test 3: Add transaction
+            setTimeout(() => {
+                addTransactionToList('Test Transaction', '100', 'income');
+                debugLog('✅ Add transaction test passed');
+            }, 3000);
+            
+            // Test 4: Notification
+            setTimeout(() => {
+                showNotification('All tests completed!', 'success');
+                debugLog('✅ All tests completed!');
+            }, 4000);
+        }
+
+        // Modal overlay click handler
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                debugLog('Modal overlay clicked');
+                closeModal(event.target.id);
+            }
+        });
+    </script>
+</body>
+</html>
