@@ -793,104 +793,6 @@
                     <textarea class="form-control form-textarea" id="walletDescription" placeholder="Add notes about this wallet"></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('walletModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        Create Wallet
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Transaction Modal -->
-    <div id="transactionModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Add Transaction</h3>
-                <button class="modal-close" onclick="closeModal('transactionModal')">&times;</button>
-            </div>
-            <form id="transactionForm" onsubmit="addTransaction(event)">
-                <div class="form-group">
-                    <label class="form-label">Transaction Type</label>
-                    <select class="form-control form-select" id="transactionType" onchange="updateTransactionForm()" required>
-                        <option value="">Select type</option>
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <input type="text" class="form-control" id="transactionDescription" placeholder="Enter description" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Amount ($)</label>
-                    <input type="number" class="form-control" id="transactionAmount" placeholder="0.00" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Wallet</label>
-                    <select class="form-control form-select" id="transactionWallet" required>
-                        <option value="">Select wallet</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category</label>
-                    <select class="form-control form-select" id="transactionCategory">
-                        <option value="">Select category</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Date</label>
-                    <input type="datetime-local" class="form-control" id="transactionDate" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Notes (Optional)</label>
-                    <textarea class="form-control form-textarea" id="transactionNotes" placeholder="Add notes"></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('transactionModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        Add Transaction
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Transfer Modal -->
-    <div id="transferModal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Transfer Between Wallets</h3>
-                <button class="modal-close" onclick="closeModal('transferModal')">&times;</button>
-            </div>
-            <form id="transferForm" onsubmit="transferMoney(event)">
-                <div class="form-group">
-                    <label class="form-label">From Wallet</label>
-                    <select class="form-control form-select" id="transferFromWallet" required>
-                        <option value="">Select source wallet</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">To Wallet</label>
-                    <select class="form-control form-select" id="transferToWallet" required>
-                        <option value="">Select destination wallet</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Amount ($)</label>
-                    <input type="number" class="form-control" id="transferAmount" placeholder="0.00" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <input type="text" class="form-control" id="transferDescription" placeholder="e.g., Moving funds to savings" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Date</label>
-                    <input type="datetime-local" class="form-control" id="transferDate" required>
-                </div>
-                <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('transferModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-exchange-alt"></i>
@@ -1411,7 +1313,7 @@
                 const option = document.createElement('option');
                 option.value = category.id;
                 option.textContent = category.name;
-                select.appendChild(option);
+                categorySelect.appendChild(option);
             });
             
             // Restore value if still valid
@@ -1623,3 +1525,101 @@
     </script>
 </body>
 </html>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('walletModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Create Wallet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transaction Modal -->
+    <div id="transactionModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Transaction</h3>
+                <button class="modal-close" onclick="closeModal('transactionModal')">&times;</button>
+            </div>
+            <form id="transactionForm" onsubmit="addTransaction(event)">
+                <div class="form-group">
+                    <label class="form-label">Transaction Type</label>
+                    <select class="form-control form-select" id="transactionType" onchange="updateTransactionForm()" required>
+                        <option value="">Select type</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" id="transactionDescription" placeholder="Enter description" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount ($)</label>
+                    <input type="number" class="form-control" id="transactionAmount" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Wallet</label>
+                    <select class="form-control form-select" id="transactionWallet" required>
+                        <option value="">Select wallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-control form-select" id="transactionCategory">
+                        <option value="">Select category</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="datetime-local" class="form-control" id="transactionDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="form-control form-textarea" id="transactionNotes" placeholder="Add notes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('transactionModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Add Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Transfer Between Wallets</h3>
+                <button class="modal-close" onclick="closeModal('transferModal')">&times;</button>
+            </div>
+            <form id="transferForm" onsubmit="transferMoney(event)">
+                <div class="form-group">
+                    <label class="form-label">From Wallet</label>
+                    <select class="form-control form-select" id="transferFromWallet" required>
+                        <option value="">Select source wallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">To Wallet</label>
+                    <select class="form-control form-select" id="transferToWallet" required>
+                        <option value="">Select destination wallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount ($)</label>
+                    <input type="number" class="form-control" id="transferAmount" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" id="transferDescription" placeholder="e.g., Moving funds to savings" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="datetime-local" class="form-control" id="transferDate" required>
+                </div>
+                <div class="form-actions">3

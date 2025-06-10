@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #0a0e27;
+            --secondary-bg: #151932;
+            --card-bg: #1a1f3a;
+            --sidebar-bg: #0f1419;
+            --accent-purple: #6366f1;
+            --accent-pink: #ec4899;
+            --accent-cyan: #06b6d4;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        .logo {
+            padding: 0 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            color: var(--accent-purple);
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .nav-link i {
+            margin-right: 1rem;
+            font-size: 1.25rem;
+            width: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5048e5;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 1rem;
+            padding-right: 3rem;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        /* Wallet Card */
+        .wallet-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-purple);
+        }
+
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .wallet-type {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .wallet-balance {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .wallet-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Transaction Item */
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+        }
+
+        .transaction-icon.income {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent-cyan);
+        }
+
+        .transaction-icon.expense {
+            background: rgba(236, 72, 153, 0.1);
+            color: var(--accent-pink);
+        }
+
+        .transaction-icon.transfer {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-purple);
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .transaction-category {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .transaction-amount.income {
+            color: var(--success);
+        }
+
+        .transaction-amount.expense {
+            color: var(--danger);
+        }
+
+        .transaction-amount.transfer {
+            color: var(--accent-purple);
+        }
+
+        /* Category Item */
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+        }
+
+        .category-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .category-details {
+            flex: 1;
+        }
+
+        .category-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .category-type {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <h1>Finance App</h1>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item">
+                    <div class="nav-link active" onclick="showPage('dashboard')">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-link" onclick="showPage('wallets')">
+                        <i class="fas fa-wallet"></i>
+                        Wallets
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-link" onclick="showPage('transactions')">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transactions
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-link" onclick="showPage('transfers')">
+                        <i class="fas fa-arrows-alt-h"></i>
+                        Transfers
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-link" onclick="showPage('categories')">
+                        <i class="fas fa-tags"></i>
+                        Categories
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-link" onclick="showPage('reports')">
+                        <i class="fas fa-chart-bar"></i>
+                        Reports
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page-content active">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="openModal('transactionModal')">
+                            <i class="fas fa-plus"></i>
+                            Add Transaction
+                        </button>
+                        <button class="btn btn-secondary" onclick="openModal('transferModal')">
+                            <i class="fas fa-exchange-alt"></i>
+                            Transfer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalBalance" style="color: var(--accent-purple);">$0.00</div>
+                        <div class="stat-label">Total Balance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalIncome" style="color: var(--success);">$0.00</div>
+                        <div class="stat-label">Total Income</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalExpenses" style="color: var(--danger);">$0.00</div>
+                        <div class="stat-label">Total Expenses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalWallets">0</div>
+                        <div class="stat-label">Total Wallets</div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Recent Transactions</h3>
+                    <div id="recentTransactionsList">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transactions yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wallets Page -->
+            <div id="wallets-page" class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">My Wallets</h1>
+                    <button class="btn btn-primary" onclick="openModal('walletModal')">
+                        <i class="fas fa-plus"></i>
+                        Create Wallet
+                    </button>
+                </div>
+                <div class="grid grid-2" id="walletsList">
+                    <p style="color: var(--text-secondary); text-align: center; padding: 2rem; grid-column: 1 / -1;">No wallets created yet</p>
+                </div>
+            </div>
+
+            <!-- Transactions Page -->
+            <div id="transactions-page" class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">All Transactions</h1>
+                    <button class="btn btn-primary" onclick="openModal('transactionModal')">
+                        <i class="fas fa-plus"></i>
+                        Add Transaction
+                    </button>
+                </div>
+                <div id="allTransactionsList">
+                    <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transactions yet</p>
+                </div>
+            </div>
+
+            <!-- Transfers Page -->
+            <div id="transfers-page" class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Wallet Transfers</h1>
+                    <button class="btn btn-primary" onclick="openModal('transferModal')">
+                        <i class="fas fa-plus"></i>
+                        New Transfer
+                    </button>
+                </div>
+                <div id="transfersList">
+                    <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transfers yet</p>
+                </div>
+            </div>
+
+            <!-- Categories Page -->
+            <div id="categories-page" class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Categories</h1>
+                    <button class="btn btn-primary" onclick="openModal('categoryModal')">
+                        <i class="fas fa-plus"></i>
+                        Add Category
+                    </button>
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; color: var(--success);">Income Categories</h3>
+                        <div id="incomeCategoriesList">
+                            <p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No income categories yet</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem; color: var(--danger);">Expense Categories</h3>
+                        <div id="expenseCategoriesList">
+                            <p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No expense categories yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reports-page" class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Financial Reports</h1>
+                </div>
+                <div style="text-align: center; padding: 4rem; color: var(--text-secondary);">
+                    <i class="fas fa-chart-line" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                    <p>Reports feature coming soon...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Wallet Creation Modal -->
+    <div id="walletModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Wallet</h3>
+                <button class="modal-close" onclick="closeModal('walletModal')">&times;</button>
+            </div>
+            <form id="walletForm" onsubmit="createWallet(event)">
+                <div class="form-group">
+                    <label class="form-label">Wallet Name</label>
+                    <input type="text" class="form-control" id="walletName" placeholder="e.g., Main Checking Account" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Wallet Type</label>
+                    <select class="form-control form-select" id="walletType" required>
+                        <option value="">Select wallet type</option>
+                        <option value="checking">Checking Account</option>
+                        <option value="savings">Savings Account</option>
+                        <option value="cash">Cash Wallet</option>
+                        <option value="credit">Credit Card</option>
+                        <option value="investment">Investment Account</option>
+                        <option value="business">Business Account</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Initial Balance ($)</label>
+                    <input type="number" class="form-control" id="walletBalance" placeholder="0.00" step="0.01" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description (Optional)</label>
+                    <textarea class="form-control form-textarea" id="walletDescription" placeholder="Add notes about this wallet"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('walletModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Create Wallet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="categoryModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Category</h3>
+                <button class="modal-close" onclick="closeModal('categoryModal')">&times;</button>
+            </div>
+            <form id="categoryForm" onsubmit="addCategory(event)">
+                <div class="form-group">
+                    <label class="form-label">Category Name</label>
+                    <input type="text" class="form-control" id="categoryName" placeholder="e.g., Groceries" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category Type</label>
+                    <select class="form-control form-select" id="categoryType" required>
+                        <option value="">Select type</option>
+                        <option value="income">Income Category</option>
+                        <option value="expense">Expense Category</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Icon</label>
+                    <select class="form-control form-select" id="categoryIcon">
+                        <option value="fas fa-dollar-sign">💰 Money</option>
+                        <option value="fas fa-utensils">🍽️ Food & Dining</option>
+                        <option value="fas fa-car">🚗 Transportation</option>
+                        <option value="fas fa-home">🏠 Housing</option>
+                        <option value="fas fa-shopping-cart">🛒 Shopping</option>
+                        <option value="fas fa-gamepad">🎮 Entertainment</option>
+                        <option value="fas fa-medkit">🏥 Healthcare</option>
+                        <option value="fas fa-graduation-cap">🎓 Education</option>
+                        <option value="fas fa-briefcase">💼 Work</option>
+                        <option value="fas fa-chart-line">📈 Investment</option>
+                        <option value="fas fa-gift">🎁 Gifts</option>
+                        <option value="fas fa-plane">✈️ Travel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <select class="form-control form-select" id="categoryColor">
+                        <option value="#6366f1">Purple</option>
+                        <option value="#ec4899">Pink</option>
+                        <option value="#06b6d4">Cyan</option>
+                        <option value="#10b981">Green</option>
+                        <option value="#f59e0b">Yellow</option>
+                        <option value="#ef4444">Red</option>
+                        <option value="#8b5cf6">Violet</option>
+                        <option value="#f97316">Orange</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('categoryModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Add Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global Data Storage
+        let wallets = [];
+        let transactions = [];
+        let categories = [];
+        let nextId = 1;
+
+        // Initialize default categories
+        const defaultCategories = [
+            // Income Categories
+            { id: nextId++, name: 'Salary', type: 'income', icon: 'fas fa-briefcase', color: '#10b981' },
+            { id: nextId++, name: 'Freelance', type: 'income', icon: 'fas fa-laptop', color: '#06b6d4' },
+            { id: nextId++, name: 'Investment Returns', type: 'income', icon: 'fas fa-chart-line', color: '#8b5cf6' },
+            { id: nextId++, name: 'Business Income', type: 'income', icon: 'fas fa-building', color: '#f59e0b' },
+            { id: nextId++, name: 'Rental Income', type: 'income', icon: 'fas fa-home', color: '#10b981' },
+            { id: nextId++, name: 'Loan Received', type: 'income', icon: 'fas fa-hand-holding-usd', color: '#ec4899' },
+            
+            // Expense Categories
+            { id: nextId++, name: 'Food & Dining', type: 'expense', icon: 'fas fa-utensils', color: '#ef4444' },
+            { id: nextId++, name: 'Transportation', type: 'expense', icon: 'fas fa-car', color: '#f97316' },
+            { id: nextId++, name: 'Shopping', type: 'expense', icon: 'fas fa-shopping-cart', color: '#ec4899' },
+            { id: nextId++, name: 'Entertainment', type: 'expense', icon: 'fas fa-gamepad', color: '#8b5cf6' },
+            { id: nextId++, name: 'Bills & Utilities', type: 'expense', icon: 'fas fa-file-invoice-dollar', color: '#f59e0b' },
+            { id: nextId++, name: 'Healthcare', type: 'expense', icon: 'fas fa-medkit', color: '#ef4444' },
+            { id: nextId++, name: 'Education', type: 'expense', icon: 'fas fa-graduation-cap', color: '#06b6d4' },
+            { id: nextId++, name: 'Travel', type: 'expense', icon: 'fas fa-plane', color: '#10b981' },
+            { id: nextId++, name: 'Housing', type: 'expense', icon: 'fas fa-home', color: '#6366f1' },
+            { id: nextId++, name: 'Insurance', type: 'expense', icon: 'fas fa-shield-alt', color: '#ef4444' }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Finance App Starting...');
+            
+            // Load default categories
+            categories = [...defaultCategories];
+            
+            // Set default date/time
+            setCurrentDateTime();
+            
+            // Load saved data from localStorage
+            loadFromStorage();
+            
+            // Update all displays
+            updateAllDisplays();
+            
+            console.log('✅ App initialized successfully');
+        });
+
+        // Save/Load from localStorage
+        function saveToStorage() {
+            try {
+                localStorage.setItem('financeApp_wallets', JSON.stringify(wallets));
+                localStorage.setItem('financeApp_transactions', JSON.stringify(transactions));
+                localStorage.setItem('financeApp_categories', JSON.stringify(categories));
+                localStorage.setItem('financeApp_nextId', nextId.toString());
+            } catch (error) {
+                console.error('Error saving to storage:', error);
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const savedWallets = localStorage.getItem('financeApp_wallets');
+                const savedTransactions = localStorage.getItem('financeApp_transactions');
+                const savedCategories = localStorage.getItem('financeApp_categories');
+                const savedNextId = localStorage.getItem('financeApp_nextId');
+                
+                if (savedWallets) wallets = JSON.parse(savedWallets);
+                if (savedTransactions) transactions = JSON.parse(savedTransactions);
+                if (savedCategories) categories = JSON.parse(savedCategories);
+                if (savedNextId) nextId = parseInt(savedNextId);
+                
+                console.log('📦 Loaded data from storage');
+            } catch (error) {
+                console.error('Error loading from storage:', error);
+            }
+        }
+
+        // Page Navigation
+        function showPage(pageName) {
+            console.log('📄 Showing page:', pageName);
+            
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageName + '-page').classList.add('active');
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav link
+            event.target.classList.add('active');
+            
+            // Update page-specific displays
+            updatePageDisplay(pageName);
+        }
+
+        function updatePageDisplay(pageName) {
+            switch(pageName) {
+                case 'wallets':
+                    displayWallets();
+                    break;
+                case 'transactions':
+                    displayAllTransactions();
+                    break;
+                case 'transfers':
+                    displayTransfers();
+                    break;
+                case 'categories':
+                    displayCategories();
+                    break;
+                case 'dashboard':
+                    updateDashboard();
+                    break;
+            }
+        }
+
+        // Modal Functions
+        function openModal(modalId) {
+            console.log('🔓 Opening modal:', modalId);
+            
+            // Update form dropdowns
+            if (modalId === 'transactionModal' || modalId === 'transferModal') {
+                updateWalletDropdowns();
+                updateCategoryDropdowns();
+            }
+            
+            setCurrentDateTime();
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            console.log('🔒 Closing modal:', modalId);
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Reset forms
+            const modal = document.getElementById(modalId);
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+            setCurrentDateTime();
+        }
+
+        function setCurrentDateTime() {
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            
+            const dateInputs = ['transactionDate', 'transferDate'];
+            dateInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) input.value = localDateTime;
+            });
+        }
+
+        // Wallet Functions
+        function createWallet(event) {
+            event.preventDefault();
+            console.log('💰 Creating wallet...');
+            
+            const name = document.getElementById('walletName').value.trim();
+            const type = document.getElementById('walletType').value;
+            const balance = parseFloat(document.getElementById('walletBalance').value) || 0;
+            const description = document.getElementById('walletDescription').value.trim();
+            
+            if (!name || !type) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const wallet = {
+                id: nextId++,
+                name: name,
+                type: type,
+                balance: balance,
+                description: description,
+                createdAt: new Date().toISOString()
+            };
+            
+            wallets.push(wallet);
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('walletModal');
+            showNotification(`Wallet "${name}" created successfully!`, 'success');
+            
+            console.log('✅ Wallet created:', wallet);
+        }
+
+        function deleteWallet(walletId) {
+            if (!confirm('Are you sure you want to delete this wallet? This action cannot be undone.')) {
+                return;
+            }
+            
+            console.log('🗑️ Deleting wallet:', walletId);
+            
+            // Remove wallet
+            wallets = wallets.filter(w => w.id !== walletId);
+            
+            // Remove related transactions
+            transactions = transactions.filter(t => t.walletId !== walletId && t.toWalletId !== walletId);
+            
+            saveToStorage();
+            updateAllDisplays();
+            showNotification('Wallet deleted successfully', 'success');
+        }
+
+        // Transaction Functions
+        function addTransaction(event) {
+            event.preventDefault();
+            console.log('💸 Adding transaction...');
+            
+            const type = document.getElementById('transactionType').value;
+            const description = document.getElementById('transactionDescription').value.trim();
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const walletId = parseInt(document.getElementById('transactionWallet').value);
+            const categoryId = parseInt(document.getElementById('transactionCategory').value) || null;
+            const date = document.getElementById('transactionDate').value;
+            const notes = document.getElementById('transactionNotes').value.trim();
+            
+            if (!type || !description || !amount || !walletId || !date) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (amount <= 0) {
+                showNotification('Amount must be greater than 0', 'error');
+                return;
+            }
+            
+            // Find wallet and update balance
+            const wallet = wallets.find(w => w.id === walletId);
+            if (!wallet) {
+                showNotification('Invalid wallet selected', 'error');
+                return;
+            }
+            
+            // Update wallet balance
+            if (type === 'income') {
+                wallet.balance += amount;
+            } else if (type === 'expense') {
+                if (wallet.balance < amount) {
+                    if (!confirm(`This transaction will make the wallet balance negative. Continue?`)) {
+                        return;
+                    }
+                }
+                wallet.balance -= amount;
+            }
+            
+            // Create transaction
+            const transaction = {
+                id: nextId++,
+                type: type,
+                description: description,
+                amount: amount,
+                walletId: walletId,
+                categoryId: categoryId,
+                date: date,
+                notes: notes,
+                createdAt: new Date().toISOString()
+            };
+            
+            transactions.unshift(transaction); // Add to beginning
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('transactionModal');
+            showNotification(`${type} of ${amount.toFixed(2)} added successfully!`, 'success');
+            
+            console.log('✅ Transaction added:', transaction);
+        }
+
+        // Transfer Functions
+        function transferMoney(event) {
+            event.preventDefault();
+            console.log('🔄 Processing transfer...');
+            
+            const fromWalletId = parseInt(document.getElementById('transferFromWallet').value);
+            const toWalletId = parseInt(document.getElementById('transferToWallet').value);
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const description = document.getElementById('transferDescription').value.trim();
+            const date = document.getElementById('transferDate').value;
+            
+            if (!fromWalletId || !toWalletId || !amount || !description || !date) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (fromWalletId === toWalletId) {
+                showNotification('Source and destination wallets must be different', 'error');
+                return;
+            }
+            
+            if (amount <= 0) {
+                showNotification('Transfer amount must be greater than 0', 'error');
+                return;
+            }
+            
+            // Find wallets
+            const fromWallet = wallets.find(w => w.id === fromWalletId);
+            const toWallet = wallets.find(w => w.id === toWalletId);
+            
+            if (!fromWallet || !toWallet) {
+                showNotification('Invalid wallet selected', 'error');
+                return;
+            }
+            
+            // Check balance
+            if (fromWallet.balance < amount) {
+                if (!confirm(`Insufficient funds in ${fromWallet.name}. This will make the balance negative. Continue?`)) {
+                    return;
+                }
+            }
+            
+            // Update balances
+            fromWallet.balance -= amount;
+            toWallet.balance += amount;
+            
+            // Create transfer transaction
+            const transfer = {
+                id: nextId++,
+                type: 'transfer',
+                description: description,
+                amount: amount,
+                walletId: fromWalletId,
+                toWalletId: toWalletId,
+                date: date,
+                createdAt: new Date().toISOString()
+            };
+            
+            transactions.unshift(transfer);
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('transferModal');
+            showNotification(`Transfer of ${amount.toFixed(2)} completed successfully!`, 'success');
+            
+            console.log('✅ Transfer completed:', transfer);
+        }
+
+        // Category Functions
+        function addCategory(event) {
+            event.preventDefault();
+            console.log('🏷️ Adding category...');
+            
+            const name = document.getElementById('categoryName').value.trim();
+            const type = document.getElementById('categoryType').value;
+            const icon = document.getElementById('categoryIcon').value;
+            const color = document.getElementById('categoryColor').value;
+            
+            if (!name || !type) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Check for duplicate
+            if (categories.some(c => c.name.toLowerCase() === name.toLowerCase() && c.type === type)) {
+                showNotification('A category with this name already exists', 'error');
+                return;
+            }
+            
+            const category = {
+                id: nextId++,
+                name: name,
+                type: type,
+                icon: icon,
+                color: color,
+                createdAt: new Date().toISOString()
+            };
+            
+            categories.push(category);
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('categoryModal');
+            showNotification(`Category "${name}" added successfully!`, 'success');
+            
+            console.log('✅ Category added:', category);
+        }
+
+        function deleteCategory(categoryId) {
+            if (!confirm('Are you sure you want to delete this category?')) {
+                return;
+            }
+            
+            console.log('🗑️ Deleting category:', categoryId);
+            
+            categories = categories.filter(c => c.id !== categoryId);
+            
+            // Update transactions that used this category
+            transactions.forEach(t => {
+                if (t.categoryId === categoryId) {
+                    t.categoryId = null;
+                }
+            });
+            
+            saveToStorage();
+            updateAllDisplays();
+            showNotification('Category deleted successfully', 'success');
+        }
+
+        // Update Dropdown Functions
+        function updateWalletDropdowns() {
+            const walletSelects = ['transactionWallet', 'transferFromWallet', 'transferToWallet'];
+            
+            walletSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                
+                // Save current value
+                const currentValue = select.value;
+                
+                // Clear options
+                select.innerHTML = `<option value="">Select wallet</option>`;
+                
+                // Add wallet options
+                wallets.forEach(wallet => {
+                    const option = document.createElement('option');
+                    option.value = wallet.id;
+                    option.textContent = `${wallet.name} (${wallet.balance.toFixed(2)})`;
+                    select.appendChild(option);
+                });
+                
+                // Restore value if still valid
+                select.value = currentValue;
+            });
+        }
+
+        function updateCategoryDropdowns() {
+            const categorySelect = document.getElementById('transactionCategory');
+            if (!categorySelect) return;
+            
+            // Save current value
+            const currentValue = categorySelect.value;
+            
+            // Clear options
+            categorySelect.innerHTML = `<option value="">Select category</option>`;
+            
+            // Filter categories based on transaction type
+            const transactionType = document.getElementById('transactionType').value;
+            const filteredCategories = categories.filter(c => c.type === transactionType);
+            
+            // Add category options
+            filteredCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+            
+            // Restore value if still valid
+            categorySelect.value = currentValue;
+        }
+
+        function updateTransactionForm() {
+            updateCategoryDropdowns();
+        }
+
+        // Display Functions
+        function updateAllDisplays() {
+            updateDashboard();
+            displayWallets();
+            displayAllTransactions();
+            displayTransfers();
+            displayCategories();
+            updateWalletDropdowns();
+            updateCategoryDropdowns();
+        }
+
+        function updateDashboard() {
+            // Calculate totals
+            const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+            const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const totalWallets = wallets.length;
+            
+            // Update stats
+            document.getElementById('totalBalance').textContent = `${totalBalance.toFixed(2)}`;
+            document.getElementById('totalIncome').textContent = `${totalIncome.toFixed(2)}`;
+            document.getElementById('totalExpenses').textContent = `${totalExpenses.toFixed(2)}`;
+            document.getElementById('totalWallets').textContent = totalWallets;
+            
+            // Display recent transactions (last 5)
+            const recentTransactions = transactions.slice(0, 5);
+            displayTransactionList(recentTransactions, 'recentTransactionsList');
+        }
+
+        function displayWallets() {
+            const container = document.getElementById('walletsList');
+            
+            if (wallets.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem; grid-column: 1 / -1;">No wallets created yet</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            wallets.forEach(wallet => {
+                const walletCard = document.createElement('div');
+                walletCard.className = 'wallet-card';
+                walletCard.innerHTML = `
+                    <div class="wallet-header">
+                        <div>
+                            <div class="wallet-name">${wallet.name}</div>
+                            <div class="wallet-type">${wallet.type}</div>
+                        </div>
+                    </div>
+                    <div class="wallet-balance">${wallet.balance.toFixed(2)}</div>
+                    ${wallet.description ? `<p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.875rem;">${wallet.description}</p>` : ''}
+                    <div class="wallet-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteWallet(${wallet.id})">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                `;
+                container.appendChild(walletCard);
+            });
+        }
+
+        function displayAllTransactions() {
+            displayTransactionList(transactions, 'allTransactionsList');
+        }
+
+        function displayTransfers() {
+            const transfers = transactions.filter(t => t.type === 'transfer');
+            displayTransactionList(transfers, 'transfersList');
+        }
+
+        function displayTransactionList(transactionList, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (transactionList.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transactions yet</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            transactionList.forEach(transaction => {
+                const wallet = wallets.find(w => w.id === transaction.walletId);
+                const toWallet = wallets.find(w => w.id === transaction.toWalletId);
+                const category = categories.find(c => c.id === transaction.categoryId);
+                
+                const transactionItem = document.createElement('div');
+                transactionItem.className = 'transaction-item';
+                
+                let iconClass, amountText, walletText;
+                
+                if (transaction.type === 'transfer') {
+                    iconClass = 'fas fa-exchange-alt';
+                    amountText = `${transaction.amount.toFixed(2)}`;
+                    walletText = `${wallet?.name || 'Unknown'} → ${toWallet?.name || 'Unknown'}`;
+                } else {
+                    iconClass = transaction.type === 'income' ? 'fas fa-arrow-up' : 'fas fa-arrow-down';
+                    amountText = `${transaction.type === 'expense' ? '-' : '+'}${transaction.amount.toFixed(2)}`;
+                    walletText = wallet?.name || 'Unknown Wallet';
+                }
+                
+                transactionItem.innerHTML = `
+                    <div class="transaction-icon ${transaction.type}">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">${transaction.description}</div>
+                        <div class="transaction-category">
+                            ${walletText}${category ? ` • ${category.name}` : ''}
+                            <br><small>${formatDate(transaction.date)}</small>
+                        </div>
+                    </div>
+                    <div class="transaction-amount ${transaction.type}">
+                        ${amountText}
+                    </div>
+                `;
+                
+                container.appendChild(transactionItem);
+            });
+        }
+
+        function displayCategories() {
+            const incomeCategories = categories.filter(c => c.type === 'income');
+            const expenseCategories = categories.filter(c => c.type === 'expense');
+            
+            displayCategoryList(incomeCategories, 'incomeCategoriesList');
+            displayCategoryList(expenseCategories, 'expenseCategoriesList');
+        }
+
+        function displayCategoryList(categoryList, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (categoryList.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No ${containerId.includes('income') ? 'income' : 'expense'} categories yet</p>`;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            categoryList.forEach(category => {
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'category-item';
+                categoryItem.innerHTML = `
+                    <div class="category-icon" style="background-color: ${category.color}20; color: ${category.color};">
+                        <i class="${category.icon}"></i>
+                    </div>
+                    <div class="category-details">
+                        <div class="category-name">${category.name}</div>
+                        <div class="category-type">${category.type}</div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(categoryItem);
+            });
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            console.log(`📢 ${type.toUpperCase()}: ${message}`);
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Modal overlay click handler
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                closeModal(event.target.id);
+            }
+        });
+    </script>
+</body>
+</html>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('walletModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Create Wallet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transaction Modal -->
+    <div id="transactionModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Transaction</h3>
+                <button class="modal-close" onclick="closeModal('transactionModal')">&times;</button>
+            </div>
+            <form id="transactionForm" onsubmit="addTransaction(event)">
+                <div class="form-group">
+                    <label class="form-label">Transaction Type</label>
+                    <select class="form-control form-select" id="transactionType" onchange="updateTransactionForm()" required>
+                        <option value="">Select type</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" id="transactionDescription" placeholder="Enter description" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount ($)</label>
+                    <input type="number" class="form-control" id="transactionAmount" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Wallet</label>
+                    <select class="form-control form-select" id="transactionWallet" required>
+                        <option value="">Select wallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-control form-select" id="transactionCategory">
+                        <option value="">Select category</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="datetime-local" class="form-control" id="transactionDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea class="form-control form-textarea" id="transactionNotes" placeholder="Add notes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('transactionModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Add Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Transfer Between Wallets</h3>
+                <button class="modal-close" onclick="closeModal('transferModal')">&times;</button>
+            </div>
+            <form id="transferForm" onsubmit="transferMoney(event)">
+                <div class="form-group">
+                    <label class="form-label">From Wallet</label>
+                    <select class="form-control form-select" id="transferFromWallet" required>
+                        <option value="">Select source wallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">To Wallet</label>
+                    <select class="form-control form-select" id="transferToWallet" required>
+                        <option value="">Select destination wallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount ($)</label>
+                    <input type="number" class="form-control" id="transferAmount" placeholder="0.00" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" id="transferDescription" placeholder="e.g., Moving funds to savings" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="datetime-local" class="form-control" id="transferDate" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('transferModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transfer Money
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global Data Storage
+        let wallets = [];
+        let transactions = [];
+        let categories = [];
+        let nextId = 1;
+
+        // Initialize default categories
+        const defaultCategories = [
+            // Income Categories
+            { id: nextId++, name: 'Salary', type: 'income', icon: 'fas fa-briefcase', color: '#10b981' },
+            { id: nextId++, name: 'Freelance', type: 'income', icon: 'fas fa-laptop', color: '#06b6d4' },
+            { id: nextId++, name: 'Investment Returns', type: 'income', icon: 'fas fa-chart-line', color: '#8b5cf6' },
+            { id: nextId++, name: 'Business Income', type: 'income', icon: 'fas fa-building', color: '#f59e0b' },
+            { id: nextId++, name: 'Rental Income', type: 'income', icon: 'fas fa-home', color: '#10b981' },
+            { id: nextId++, name: 'Loan Received', type: 'income', icon: 'fas fa-hand-holding-usd', color: '#ec4899' },
+            
+            // Expense Categories
+            { id: nextId++, name: 'Food & Dining', type: 'expense', icon: 'fas fa-utensils', color: '#ef4444' },
+            { id: nextId++, name: 'Transportation', type: 'expense', icon: 'fas fa-car', color: '#f97316' },
+            { id: nextId++, name: 'Shopping', type: 'expense', icon: 'fas fa-shopping-cart', color: '#ec4899' },
+            { id: nextId++, name: 'Entertainment', type: 'expense', icon: 'fas fa-gamepad', color: '#8b5cf6' },
+            { id: nextId++, name: 'Bills & Utilities', type: 'expense', icon: 'fas fa-file-invoice-dollar', color: '#f59e0b' },
+            { id: nextId++, name: 'Healthcare', type: 'expense', icon: 'fas fa-medkit', color: '#ef4444' },
+            { id: nextId++, name: 'Education', type: 'expense', icon: 'fas fa-graduation-cap', color: '#06b6d4' },
+            { id: nextId++, name: 'Travel', type: 'expense', icon: 'fas fa-plane', color: '#10b981' },
+            { id: nextId++, name: 'Housing', type: 'expense', icon: 'fas fa-home', color: '#6366f1' },
+            { id: nextId++, name: 'Insurance', type: 'expense', icon: 'fas fa-shield-alt', color: '#ef4444' }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Finance App Starting...');
+            
+            // Load default categories
+            categories = [...defaultCategories];
+            
+            // Set default date/time
+            setCurrentDateTime();
+            
+            // Load saved data from localStorage
+            loadFromStorage();
+            
+            // Update all displays
+            updateAllDisplays();
+            
+            console.log('✅ App initialized successfully');
+        });
+
+        // Save/Load from localStorage
+        function saveToStorage() {
+            try {
+                localStorage.setItem('financeApp_wallets', JSON.stringify(wallets));
+                localStorage.setItem('financeApp_transactions', JSON.stringify(transactions));
+                localStorage.setItem('financeApp_categories', JSON.stringify(categories));
+                localStorage.setItem('financeApp_nextId', nextId.toString());
+            } catch (error) {
+                console.error('Error saving to storage:', error);
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const savedWallets = localStorage.getItem('financeApp_wallets');
+                const savedTransactions = localStorage.getItem('financeApp_transactions');
+                const savedCategories = localStorage.getItem('financeApp_categories');
+                const savedNextId = localStorage.getItem('financeApp_nextId');
+                
+                if (savedWallets) wallets = JSON.parse(savedWallets);
+                if (savedTransactions) transactions = JSON.parse(savedTransactions);
+                if (savedCategories) categories = JSON.parse(savedCategories);
+                if (savedNextId) nextId = parseInt(savedNextId);
+                
+                console.log('📦 Loaded data from storage');
+            } catch (error) {
+                console.error('Error loading from storage:', error);
+            }
+        }
+
+        // Page Navigation
+        function showPage(pageName) {
+            console.log('📄 Showing page:', pageName);
+            
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageName + '-page').classList.add('active');
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav link
+            event.target.classList.add('active');
+            
+            // Update page-specific displays
+            updatePageDisplay(pageName);
+        }
+
+        function updatePageDisplay(pageName) {
+            switch(pageName) {
+                case 'wallets':
+                    displayWallets();
+                    break;
+                case 'transactions':
+                    displayAllTransactions();
+                    break;
+                case 'transfers':
+                    displayTransfers();
+                    break;
+                case 'categories':
+                    displayCategories();
+                    break;
+                case 'dashboard':
+                    updateDashboard();
+                    break;
+            }
+        }
+
+        // Modal Functions
+        function openModal(modalId) {
+            console.log('🔓 Opening modal:', modalId);
+            
+            // Update form dropdowns
+            if (modalId === 'transactionModal' || modalId === 'transferModal') {
+                updateWalletDropdowns();
+                updateCategoryDropdowns();
+            }
+            
+            setCurrentDateTime();
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            console.log('🔒 Closing modal:', modalId);
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Reset forms
+            const modal = document.getElementById(modalId);
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+            setCurrentDateTime();
+        }
+
+        function setCurrentDateTime() {
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            
+            const dateInputs = ['transactionDate', 'transferDate'];
+            dateInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) input.value = localDateTime;
+            });
+        }
+
+        // Wallet Functions
+        function createWallet(event) {
+            event.preventDefault();
+            console.log('💰 Creating wallet...');
+            
+            const name = document.getElementById('walletName').value.trim();
+            const type = document.getElementById('walletType').value;
+            const balance = parseFloat(document.getElementById('walletBalance').value) || 0;
+            const description = document.getElementById('walletDescription').value.trim();
+            
+            if (!name || !type) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const wallet = {
+                id: nextId++,
+                name: name,
+                type: type,
+                balance: balance,
+                description: description,
+                createdAt: new Date().toISOString()
+            };
+            
+            wallets.push(wallet);
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('walletModal');
+            showNotification(`Wallet "${name}" created successfully!`, 'success');
+            
+            console.log('✅ Wallet created:', wallet);
+        }
+
+        function deleteWallet(walletId) {
+            if (!confirm('Are you sure you want to delete this wallet? This action cannot be undone.')) {
+                return;
+            }
+            
+            console.log('🗑️ Deleting wallet:', walletId);
+            
+            // Remove wallet
+            wallets = wallets.filter(w => w.id !== walletId);
+            
+            // Remove related transactions
+            transactions = transactions.filter(t => t.walletId !== walletId && t.toWalletId !== walletId);
+            
+            saveToStorage();
+            updateAllDisplays();
+            showNotification('Wallet deleted successfully', 'success');
+        }
+
+        // Transaction Functions
+        function addTransaction(event) {
+            event.preventDefault();
+            console.log('💸 Adding transaction...');
+            
+            const type = document.getElementById('transactionType').value;
+            const description = document.getElementById('transactionDescription').value.trim();
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const walletId = parseInt(document.getElementById('transactionWallet').value);
+            const categoryId = parseInt(document.getElementById('transactionCategory').value) || null;
+            const date = document.getElementById('transactionDate').value;
+            const notes = document.getElementById('transactionNotes').value.trim();
+            
+            if (!type || !description || !amount || !walletId || !date) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (amount <= 0) {
+                showNotification('Amount must be greater than 0', 'error');
+                return;
+            }
+            
+            // Find wallet and update balance
+            const wallet = wallets.find(w => w.id === walletId);
+            if (!wallet) {
+                showNotification('Invalid wallet selected', 'error');
+                return;
+            }
+            
+            // Update wallet balance
+            if (type === 'income') {
+                wallet.balance += amount;
+            } else if (type === 'expense') {
+                if (wallet.balance < amount) {
+                    if (!confirm(`This transaction will make the wallet balance negative. Continue?`)) {
+                        return;
+                    }
+                }
+                wallet.balance -= amount;
+            }
+            
+            // Create transaction
+            const transaction = {
+                id: nextId++,
+                type: type,
+                description: description,
+                amount: amount,
+                walletId: walletId,
+                categoryId: categoryId,
+                date: date,
+                notes: notes,
+                createdAt: new Date().toISOString()
+            };
+            
+            transactions.unshift(transaction); // Add to beginning
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('transactionModal');
+            showNotification(`${type} of $${amount.toFixed(2)} added successfully!`, 'success');
+            
+            console.log('✅ Transaction added:', transaction);
+        }
+
+        // Transfer Functions
+        function transferMoney(event) {
+            event.preventDefault();
+            console.log('🔄 Processing transfer...');
+            
+            const fromWalletId = parseInt(document.getElementById('transferFromWallet').value);
+            const toWalletId = parseInt(document.getElementById('transferToWallet').value);
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const description = document.getElementById('transferDescription').value.trim();
+            const date = document.getElementById('transferDate').value;
+            
+            if (!fromWalletId || !toWalletId || !amount || !description || !date) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (fromWalletId === toWalletId) {
+                showNotification('Source and destination wallets must be different', 'error');
+                return;
+            }
+            
+            if (amount <= 0) {
+                showNotification('Transfer amount must be greater than 0', 'error');
+                return;
+            }
+            
+            // Find wallets
+            const fromWallet = wallets.find(w => w.id === fromWalletId);
+            const toWallet = wallets.find(w => w.id === toWalletId);
+            
+            if (!fromWallet || !toWallet) {
+                showNotification('Invalid wallet selected', 'error');
+                return;
+            }
+            
+            // Check balance
+            if (fromWallet.balance < amount) {
+                if (!confirm(`Insufficient funds in ${fromWallet.name}. This will make the balance negative. Continue?`)) {
+                    return;
+                }
+            }
+            
+            // Update balances
+            fromWallet.balance -= amount;
+            toWallet.balance += amount;
+            
+            // Create transfer transaction
+            const transfer = {
+                id: nextId++,
+                type: 'transfer',
+                description: description,
+                amount: amount,
+                walletId: fromWalletId,
+                toWalletId: toWalletId,
+                date: date,
+                createdAt: new Date().toISOString()
+            };
+            
+            transactions.unshift(transfer);
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('transferModal');
+            showNotification(`Transfer of $${amount.toFixed(2)} completed successfully!`, 'success');
+            
+            console.log('✅ Transfer completed:', transfer);
+        }
+
+        // Category Functions
+        function addCategory(event) {
+            event.preventDefault();
+            console.log('🏷️ Adding category...');
+            
+            const name = document.getElementById('categoryName').value.trim();
+            const type = document.getElementById('categoryType').value;
+            const icon = document.getElementById('categoryIcon').value;
+            const color = document.getElementById('categoryColor').value;
+            
+            if (!name || !type) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            // Check for duplicate
+            if (categories.some(c => c.name.toLowerCase() === name.toLowerCase() && c.type === type)) {
+                showNotification('A category with this name already exists', 'error');
+                return;
+            }
+            
+            const category = {
+                id: nextId++,
+                name: name,
+                type: type,
+                icon: icon,
+                color: color,
+                createdAt: new Date().toISOString()
+            };
+            
+            categories.push(category);
+            saveToStorage();
+            updateAllDisplays();
+            closeModal('categoryModal');
+            showNotification(`Category "${name}" added successfully!`, 'success');
+            
+            console.log('✅ Category added:', category);
+        }
+
+        function deleteCategory(categoryId) {
+            if (!confirm('Are you sure you want to delete this category?')) {
+                return;
+            }
+            
+            console.log('🗑️ Deleting category:', categoryId);
+            
+            categories = categories.filter(c => c.id !== categoryId);
+            
+            // Update transactions that used this category
+            transactions.forEach(t => {
+                if (t.categoryId === categoryId) {
+                    t.categoryId = null;
+                }
+            });
+            
+            saveToStorage();
+            updateAllDisplays();
+            showNotification('Category deleted successfully', 'success');
+        }
+
+        // Update Dropdown Functions
+        function updateWalletDropdowns() {
+            const walletSelects = ['transactionWallet', 'transferFromWallet', 'transferToWallet'];
+            
+            walletSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (!select) return;
+                
+                // Save current value
+                const currentValue = select.value;
+                
+                // Clear options
+                select.innerHTML = `<option value="">Select wallet</option>`;
+                
+                // Add wallet options
+                wallets.forEach(wallet => {
+                    const option = document.createElement('option');
+                    option.value = wallet.id;
+                    option.textContent = `${wallet.name} ($${wallet.balance.toFixed(2)})`;
+                    select.appendChild(option);
+                });
+                
+                // Restore value if still valid
+                select.value = currentValue;
+            });
+        }
+
+        function updateCategoryDropdowns() {
+            const categorySelect = document.getElementById('transactionCategory');
+            if (!categorySelect) return;
+            
+            // Save current value
+            const currentValue = categorySelect.value;
+            
+            // Clear options
+            categorySelect.innerHTML = `<option value="">Select category</option>`;
+            
+            // Filter categories based on transaction type
+            const transactionType = document.getElementById('transactionType').value;
+            const filteredCategories = categories.filter(c => c.type === transactionType);
+            
+            // Add category options
+            filteredCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+            
+            // Restore value if still valid
+            categorySelect.value = currentValue;
+        }
+
+        function updateTransactionForm() {
+            updateCategoryDropdowns();
+        }
+
+        // Display Functions
+        function updateAllDisplays() {
+            updateDashboard();
+            displayWallets();
+            displayAllTransactions();
+            displayTransfers();
+            displayCategories();
+            updateWalletDropdowns();
+            updateCategoryDropdowns();
+        }
+
+        function updateDashboard() {
+            // Calculate totals
+            const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+            const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const totalWallets = wallets.length;
+            
+            // Update stats
+            document.getElementById('totalBalance').textContent = `$${totalBalance.toFixed(2)}`;
+            document.getElementById('totalIncome').textContent = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('totalExpenses').textContent = `$${totalExpenses.toFixed(2)}`;
+            document.getElementById('totalWallets').textContent = totalWallets;
+            
+            // Display recent transactions (last 5)
+            const recentTransactions = transactions.slice(0, 5);
+            displayTransactionList(recentTransactions, 'recentTransactionsList');
+        }
+
+        function displayWallets() {
+            const container = document.getElementById('walletsList');
+            
+            if (wallets.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem; grid-column: 1 / -1;">No wallets created yet</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            wallets.forEach(wallet => {
+                const walletCard = document.createElement('div');
+                walletCard.className = 'wallet-card';
+                walletCard.innerHTML = `
+                    <div class="wallet-header">
+                        <div>
+                            <div class="wallet-name">${wallet.name}</div>
+                            <div class="wallet-type">${wallet.type}</div>
+                        </div>
+                    </div>
+                    <div class="wallet-balance">$${wallet.balance.toFixed(2)}</div>
+                    ${wallet.description ? `<p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.875rem;">${wallet.description}</p>` : ''}
+                    <div class="wallet-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteWallet(${wallet.id})">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                `;
+                container.appendChild(walletCard);
+            });
+        }
+
+        function displayAllTransactions() {
+            displayTransactionList(transactions, 'allTransactionsList');
+        }
+
+        function displayTransfers() {
+            const transfers = transactions.filter(t => t.type === 'transfer');
+            displayTransactionList(transfers, 'transfersList');
+        }
+
+        function displayTransactionList(transactionList, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (transactionList.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No transactions yet</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            transactionList.forEach(transaction => {
+                const wallet = wallets.find(w => w.id === transaction.walletId);
+                const toWallet = wallets.find(w => w.id === transaction.toWalletId);
+                const category = categories.find(c => c.id === transaction.categoryId);
+                
+                const transactionItem = document.createElement('div');
+                transactionItem.className = 'transaction-item';
+                
+                let iconClass, amountText, walletText;
+                
+                if (transaction.type === 'transfer') {
+                    iconClass = 'fas fa-exchange-alt';
+                    amountText = `$${transaction.amount.toFixed(2)}`;
+                    walletText = `${wallet?.name || 'Unknown'} → ${toWallet?.name || 'Unknown'}`;
+                } else {
+                    iconClass = transaction.type === 'income' ? 'fas fa-arrow-up' : 'fas fa-arrow-down';
+                    amountText = `${transaction.type === 'expense' ? '-' : '+'}$${transaction.amount.toFixed(2)}`;
+                    walletText = wallet?.name || 'Unknown Wallet';
+                }
+                
+                transactionItem.innerHTML = `
+                    <div class="transaction-icon ${transaction.type}">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">${transaction.description}</div>
+                        <div class="transaction-category">
+                            ${walletText}${category ? ` • ${category.name}` : ''}
+                            <br><small>${formatDate(transaction.date)}</small>
+                        </div>
+                    </div>
+                    <div class="transaction-amount ${transaction.type}">
+                        ${amountText}
+                    </div>
+                `;
+                
+                container.appendChild(transactionItem);
+            });
+        }
+
+        function displayCategories() {
+            const incomeCategories = categories.filter(c => c.type === 'income');
+            const expenseCategories = categories.filter(c => c.type === 'expense');
+            
+            displayCategoryList(incomeCategories, 'incomeCategoriesList');
+            displayCategoryList(expenseCategories, 'expenseCategoriesList');
+        }
+
+        function displayCategoryList(categoryList, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (categoryList.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 1rem;">No ${containerId.includes('income') ? 'income' : 'expense'} categories yet</p>`;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            categoryList.forEach(category => {
+                const categoryItem = document.createElement('div');
+                categoryItem.className = 'category-item';
+                categoryItem.innerHTML = `
+                    <div class="category-icon" style="background-color: ${category.color}20; color: ${category.color};">
+                        <i class="${category.icon}"></i>
+                    </div>
+                    <div class="category-details">
+                        <div class="category-name">${category.name}</div>
+                        <div class="category-type">${category.type}</div>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(categoryItem);
+            });
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            console.log(`📢 ${type.toUpperCase()}: ${message}`);
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Modal overlay click handler
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                closeModal(event.target.id);
+            }
+        });
+    </script>
+</body>
+</html>
